@@ -8,6 +8,7 @@ interface TimelineCardProps {
   date?: string;
 }
 
+// FIXME: The component size is a bit too large on smaller screens (?)
 export const TimelineCard = (props: TimelineCardProps) => {
   const isMobile = useIsMobile();
 
