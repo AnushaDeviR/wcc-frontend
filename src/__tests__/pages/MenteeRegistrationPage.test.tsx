@@ -297,3 +297,105 @@ describe('MenteeRegistrationPage - adhoc cycle', () => {
     });
   });
 });
+
+describe('MenteeRegistrationPage - long-term cycle', () => {
+  beforeEach(() => {
+    mockIsAdhocCycle = false;
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue([]),
+    });
+  });
+
+  afterEach(() => {
+    mockIsAdhocCycle = false;
+    jest.resetAllMocks();
+  });
+
+  it('blocks step 2 when availableHsMonth is below threshold for long-term', async () => {
+    renderPage();
+
+    fireEvent.change(screen.getByPlaceholderText('Jane Doe'), {
+      target: { value: 'Jane Doe' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('jane@example.com'), {
+      target: { value: 'jane@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('@jane'), {
+      target: { value: '@jane' },
+    });
+
+    const countrySelect = screen.getByRole('combobox');
+    fireEvent.mouseDown(countrySelect);
+    const countryOption = await screen.findByRole('option', {
+      name: /United Kingdom/i,
+    });
+    fireEvent.click(countryOption);
+
+    fireEvent.change(screen.getByPlaceholderText('London'), {
+      target: { value: 'London' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText('e.g. Frontend Developer, Student'),
+      { target: { value: 'Developer' } },
+    );
+    fireEvent.change(screen.getByPlaceholderText('Acme Corp'), {
+      target: { value: 'Tech Corp' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText('https://www.linkedin.com/in/yourprofile'),
+      { target: { value: 'https://www.linkedin.com/in/janedoe' } },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Step 1 of 3')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Step 2 of 3')).not.toBeInTheDocument();
+  });
+
+  it('shows validation error for availableHsMonth below threshold', async () => {
+    renderPage();
+
+    fireEvent.change(screen.getByPlaceholderText('Jane Doe'), {
+      target: { value: 'Jane Doe' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('jane@example.com'), {
+      target: { value: 'jane@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('@jane'), {
+      target: { value: '@jane' },
+    });
+
+    const countrySelect = screen.getByRole('combobox');
+    fireEvent.mouseDown(countrySelect);
+    const countryOption = await screen.findByRole('option', {
+      name: /United Kingdom/i,
+    });
+    fireEvent.click(countryOption);
+
+    fireEvent.change(screen.getByPlaceholderText('London'), {
+      target: { value: 'London' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText('e.g. Frontend Developer, Student'),
+      { target: { value: 'Developer' } },
+    );
+    fireEvent.change(screen.getByPlaceholderText('Acme Corp'), {
+      target: { value: 'Tech Corp' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText('https://www.linkedin.com/in/yourprofile'),
+      { target: { value: 'https://www.linkedin.com/in/janedoe' } },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Please enter at least 2 hours per month'),
+      ).toBeInTheDocument();
+    });
+  });
+});
